@@ -22,35 +22,22 @@ QQ 客户端  ──消息──▶  NapCat（OneBot v11 协议）
 
 ## 和桌宠共用一个「意识」
 
-`config.json` 的 `brainUrl`（默认 `http://127.0.0.1:4399`）指向**桌宠项目**里的 `brain.mjs`：
+`config.json` 的 `brainUrl`（默认 `http://127.0.0.1:4399`）指向 `../pet/brain.mjs`：
 
 - 开着：QQ 消息交给「意识」服务，和桌面上的她共用**同一份人格、长期记忆、作息**；
 - 没开：自动回退到本地起 `dsh`，机器人照常能用，只是记忆不通。
 
-桌宠是另一个仓库 **dsh-desktop-pet**（`brain.mjs` 在里面）。记忆按它那边的 `MEMORY.md` 做了分层冷热：原文归档、事件卡热存、旧事冷存、用户线索召回，单次注入有 1600 tokens 硬上限。不装桌宠也能单独跑：`brainUrl` 留空即回退到本地起 dsh。
+桌宠本身见 [../pet/README.md](../pet/README.md)。记忆按 [../pet/MEMORY.md](../pet/MEMORY.md) 做了分层冷热：原文归档、事件卡热存、旧事冷存、用户线索召回，单次注入有 1600 tokens 硬上限。
 
-## 快速开始
+## 当前状态（已上线）
 
-```powershell
-# 1) 建配置（把里面的路径、Token、QQ 号改成你自己的）
-Copy-Item config.example.json config.json
-
-# 2) 生成 DSH profile（把桌面端已登录的账号额度复用过来）
-powershell -ExecutionPolicy Bypass -File .\setup.ps1
-
-# 3) 启动（NapCat 需要先装好并登录）
-双击 启动（无窗口）.vbs
-```
-
-需要的东西：
-
-| 依赖 | 说明 |
-| --- | --- |
-| DeepSeek Harness | 本机已安装并登录（插件复用桌面端账号，不需要 API Key） |
-| NapCat | QQ 的 OneBot v11 实现，`config.json` 里填它的 WS 地址和 Token |
-| Node.js | ≥ 22（桥接只用内置 `WebSocket` 和 `crypto`，无第三方依赖） |
-
-`config.json` 里最常改的几项：`dshCmd`（dsh 启动器路径）、`ownerQQ`（只有这个号能改人格）、`accessToken`（NapCat 的 Token）、`brainUrl`（桌宠的意识服务，不装桌宠就留空）。
+- ✅ 独立 profile：`%USERPROFILE%\.dsh\profiles\qq`（不影响桌面端，可同时开）
+- ✅ 人格文件：`%USERPROFILE%\.dsh\persona\qq.md`
+- ✅ NapCat 4.18.41：`D:\NapCat\NapCat.Shell`（自带 Node，已配好 WebSocket 服务器 3001）
+- ✅ 机器人账号：**10001（农，小号）**，已快速登录
+- ✅ 真实联调通过：主号 `你的QQ号` 私聊 `callo~`，3.6 秒回复
+- 访问 Token：`YOUR_NAPCAT_TOKEN`（NapCat 与 `config.json` 两侧已一致）
+- 小号现有：好友 2 人（含主号）、群 1 个（`148129554`）
 
 ## 日常启动：双击 `启动（无窗口）.vbs`
 
@@ -177,6 +164,19 @@ DSH 重启会把它启动的子进程一起回收，所以服务不能只靠手�
 | `maxReplyChars` | 1800 | 单条消息上限，超出自动拆分多条 |
 | `quoteReply` | true | 回复时引用原消息（群里更清楚） |
 | `timeZone` | Asia/Shanghai | 告诉模型「现在几点」用的时区 |
+| `quietHours` | 无 | 夜间静默时段，如 `{ "start": 23, "end": 8 }`，见下 |
+
+## 夜间静默（23:00–08:00 不回复、不花 token）
+
+```json
+"quietHours": { "start": 23, "end": 8 }
+```
+
+- 时段内收到的消息**直接丢弃**：不回复、不进模型、不调 dsh，token 消耗为零；
+- 支持跨零点（`23 → 8` 就是当晚 23:00 到次日 08:00），也支持同日窗口（如 `1 → 6`）；
+- 日志里每 10 分钟最多提示一次「静默时段」，不会刷屏；
+- 想关掉：删掉 `quietHours` 这一项，或把 `start` 和 `end` 设成同一个数；
+- **只影响 QQ**：桌宠的桌面对话不受影响；桌宠的「主动说话」在静默时段也会停（它走同一个 brain）。
 
 ## 成本与延迟
 
