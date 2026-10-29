@@ -1,0 +1,12 @@
+# 密钥与个人数据，不要提交
+config.json
+state.json
+state/
+logs/
+*.lock
+*.pid
+
+# 运行时产物
+node_modules/
+.DS_Store
+Thumbs.db
