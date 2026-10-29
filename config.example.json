@@ -8,8 +8,14 @@
   "displayName": "",
   "syncGroupCard": true,
   "selfId": 0,
-  "groups": { "mode": "all", "allow": [] },
-  "groupTrigger": { "at": true, "prefix": "" },
+  "groups": {
+    "mode": "all",
+    "allow": []
+  },
+  "groupTrigger": {
+    "at": true,
+    "prefix": ""
+  },
   "quoteReply": true,
   "rateLimitMs": 1500,
   "contentDedupeMs": 5000,
@@ -22,5 +28,9 @@
   "brainUrl": "http://127.0.0.1:4399",
   "emptyReply": "（这只助理刚刚走神了，再说一遍？）",
   "errorReply": "（这边出了点故障，稍后再试一次吧。）",
-  "resetReply": "记忆清空了，我们重新认识一下吧。"
+  "resetReply": "记忆清空了，我们重新认识一下吧。",
+  "quietHours": {
+    "start": 23,
+    "end": 8
+  }
 }

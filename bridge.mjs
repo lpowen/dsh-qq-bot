@@ -17,6 +17,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDeduper } from './dedupe.mjs';
 import { createPersonaCommands } from './commands.mjs';
+import { isQuiet, quietLabel } from './quiet.mjs';
+
+// 静默时段内收到消息时的日志节流
+let quietSilentUntil = 0;
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CFG = JSON.parse(fs.readFileSync(path.join(HERE, 'config.json'), 'utf8'));
@@ -540,6 +544,9 @@ function connect() {
   ws.addEventListener('open', () => {
     reconnectDelay = 5000;
     log('已连接，等待 QQ 消息…（Ctrl+C 退出）');
+    if (CFG.quietHours) {
+      log(`静默时段：${quietLabel(CFG)}（当前${isQuiet(Date.now(), CFG) ? '静默中' : '正常'}）`);
+    }
     if (CFG.syncGroupCard !== false) {
       setTimeout(() => syncGroupCard().catch(() => {}), 1500);
     }
@@ -566,6 +573,15 @@ function connect() {
     if (data.self_id) selfId = data.self_id;
 
     if (data.post_type === 'message') {
+      // 夜间静默：完全不进模型、不回复、不花 token
+      if (isQuiet(Date.now(), CFG)) {
+        const now = Date.now();
+        if (!quietSilentUntil || now > quietSilentUntil) {
+          quietSilentUntil = now + 10 * 60 * 1000;
+          log(`静默时段（${quietLabel(CFG)}），消息不回复、不调模型（10 分钟内只提示一次）`);
+        }
+        return;
+      }
       handleMessage(data).catch((e) => log('处理消息异常', e.stack || e.message));
     }
   });
