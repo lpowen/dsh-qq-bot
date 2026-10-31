@@ -51,10 +51,11 @@ if ($needBridge) {
   Start-Process -FilePath $node -ArgumentList 'bridge.mjs' -WorkingDirectory $here -WindowStyle Hidden
 }
 
-# 4) desktop pet
+# 4) desktop pet  (skip if the user quit it on purpose; manual launcher clears the flag)
+$petStopped = Join-Path $petDir 'state\pet.stopped'
 $petRunning = Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" |
   Where-Object { $_.CommandLine -like '*pet.py*' }
-if (-not $petRunning) {
+if (-not (Test-Path $petStopped) -and -not $petRunning) {
   Log 'starting pet'
   Start-Process -FilePath $pythonw -ArgumentList 'pet.py' -WorkingDirectory $petDir -WindowStyle Hidden
 }

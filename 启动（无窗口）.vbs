@@ -1,12 +1,15 @@
 Option Explicit
 ' Silently start NapCat + brain + bridge + pet (no console windows).
-' Manual start also clears the "paused" flag, so the watchdog resumes too.
+' Manual start clears the "paused" and "pet quit" flags, so the watchdog resumes too.
 Dim sh, fso, here, cmd, flag
 Set sh = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 here = fso.GetParentFolderName(WScript.ScriptFullName)
 
 flag = here & "\state\paused.flag"
+If fso.FileExists(flag) Then fso.DeleteFile flag, True
+
+flag = here & "\..\pet\state\pet.stopped"
 If fso.FileExists(flag) Then fso.DeleteFile flag, True
 
 cmd = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File """ & here & "\silent-launch.ps1"""
